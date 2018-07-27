@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BOT (Breakout of Treachery)</title>
+    <script src="https://npmcdn.com/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="css/foundation.min.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link href="https://fonts.googleapis.com/css?family=Gaegu:300,400,700|Indie+Flower|Poor+Story" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+    <!-- WELCOME -->
+    <section class="row controls" v-if="!isPlayingGame">
+        <div class="small-12 columns text-center" style="margin: 7rem auto;">
+            <div class="primary"> 
+                <del>PUBG</del> <ins>BOT</ins>
+            </div>
+            <span class="comment">(betrayal of treachary)</span>
+            <fieldset>
+                <legend>Instructions</legend>
+                <ul>
+                    <li>- Each player has a turn</li>
+                    <li>- When you heal, opposite player will have a chance to attack twice</li>
+                    <li>- Use Special Attack to hit bigger damage</li>
+                    <li>- Enjoy!</li>
+                </ul>
+            </fieldset>
+            <div class="primary">
+                <span class="pointer-cursor link" @click="resetGame">START GAME</span>
+            </div>
+            <!-- <button id="start-game" @click="resetGame">START NEW GAME</button> -->
+        </div>
+    </section>
+    <!-- PERSONALISE PLAYERS -->
+    <section class="row preference" v-if="players.length < 2 && isPlayingGame">
+        <div class="small-12 columns">
+            <div>
+                <span class="primary">PLAYER {{ players.length + 1 }}: </span>
+                <input type="text" placeholder="NAME" v-model="Pname">
+                <span class="secondary">Pick any of the colors below:</span>
+                <div>
+                    <button
+                        :class="{ selected: color.name == Pcolor }"
+                        v-for="color in colors"
+                        :style="{ 'color': '#fff', 'background-color': color.name }"
+                        @click="Pcolor = color.name"
+                        v-if="color.available"> {{ color.name }}</button>
+                </div>
+                <span class="secondary pointer-cursor" v-if="pCheck" @click="createPlayer"> >> </span>
+            </div>
+        </div>
+    </section>
+    <!-- GAME STARTS -->
+    <section class="row" v-if="players.length > 1">
+        <div style="position: absolute; left: 50%;">
+            <h1>VS</h1>
+        </div>
+        <div class="small-6 columns" v-for="person in players">
+            <h1 class="text-center">{{ person.character }}</h1>
+            <div class="healthbar">
+                <div 
+                    class="healthbar text-center bar"
+                    :style="{ width: person.health + '%', 'background-color': person.health > 50 ? person.color : '#A80000' }">
+                    {{ person.health }}
+                </div>
+            </div>
+            <div class="controls">
+                <button 
+                    id="attack"
+                    @click="attack(false)"
+                    :class="{ disabled: !person.turn.isTurn }"
+                    :disabled="!person.turn.isTurn">ATTACK</button>
+                <button 
+                    id="special-attack" 
+                    @click="attack(true)" 
+                    :class="{ disabled: person.turn.action > 1 ? true : !person.turn.isTurn }"
+                    :disabled="person.turn.action > 1 ? true : !person.turn.isTurn">SPECIAL ATTACK</button>
+                <button 
+                    id="heal" 
+                    :class="{ disabled: person.turn.disableHeal ? true : !person.turn.isTurn }"
+                    :disabled="person.turn.disableHeal ? true : !person.turn.isTurn"
+                    @click="heal">HEAL</button>
+                <button 
+                    id="give-up" 
+                    :class="{ disabled: !person.turn.isTurn }"
+                    :disabled="!person.turn.isTurn"
+                    @click="giveUp">GIVE UP</button>
+            </div>
+        </div>
+    </section>
+    <!-- ATTACK LOGS -->
+    <section class="row log" v-if="actionLogs.length > 0">
+        <div class="small-12 columns">
+            <ul>
+                <li
+                    v-for="log in actionLogs"
+                    :class=""
+                    :style="{'background-color': log.info.color, color: '#fff' }">
+                    <p> 
+                        {{ log.info.name }} 
+                        <span v-if="log.isAttack" class="attack"><b>ATTACKED</b></span>
+                        <span v-else class="heal"><b>HEALED</b></span>
+                        for {{ log.amount }}
+                    </p>
+                </li>
+            </ul>
+        </div>
+    </section>
+</div>
+</body>
+<script src="./action.js"></script>
+</html>
